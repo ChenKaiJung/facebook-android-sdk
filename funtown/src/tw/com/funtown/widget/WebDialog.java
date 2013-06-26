@@ -51,9 +51,11 @@ import tw.com.funtown.*;
 public class WebDialog extends Dialog {
     private static final String LOG_TAG = Logger.LOG_TAG_BASE + "WebDialog";
     private static final String DISPLAY_TOUCH = "touch";
+    private static final String GAME_URI = "game_uri";    
     private static final String VIEW_REG = "reg_mobile";    
     private static final String USER_AGENT = "user_agent";
     static final String REDIRECT_URI = "ftconnect://success";
+    static final String SUCCESS_REDIRECT_URI = "weblogin.funtown.com.tw/oauth/login_success.html";    
     static final String CANCEL_URI = "ftconnect://cancel";
     static final boolean DISABLE_SSL_CHECK_FOR_TESTING = false;
 
@@ -285,7 +287,7 @@ public class WebDialog extends Dialog {
         @SuppressWarnings("deprecation")
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             Utility.logd(LOG_TAG, "Redirect URL: " + url);
-            if (url.startsWith(WebDialog.REDIRECT_URI)) {
+            if (url.contains(WebDialog.SUCCESS_REDIRECT_URI)) {
                 Bundle values = Util.parseUrl(url);
 
                 String error = values.getString("error");
@@ -308,7 +310,7 @@ public class WebDialog extends Dialog {
                 }
 
                 if (Utility.isNullOrEmpty(error) && Utility
-                        .isNullOrEmpty(errorMessage) && errorCode == FuntownRequestError.INVALID_ERROR_CODE) {
+                        .isNullOrEmpty(errorMessage) && errorCode == FuntownRequestError.SUCCESS_ERROR_CODE) {
                     sendSuccessToListener(values);
                 } else if (error != null && (error.equals("access_denied") ||
                         error.equals("OAuthAccessDeniedException"))) {
@@ -320,6 +322,8 @@ public class WebDialog extends Dialog {
 
                 WebDialog.this.dismiss();
                 return true;
+            } else if (url.contains(GAME_URI)) {    	
+                return false;            	
             } else if (url.startsWith(WebDialog.CANCEL_URI)) {
                 sendCancelToListener();
                 WebDialog.this.dismiss();

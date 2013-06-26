@@ -51,7 +51,8 @@ public final class AccessToken implements Serializable {
     private static final Date DEFAULT_LAST_REFRESH_TIME = new Date();
     private static final AccessTokenSource DEFAULT_ACCESS_TOKEN_SOURCE = AccessTokenSource.FACEBOOK_APPLICATION_WEB;
     private static final Date ALREADY_EXPIRED_EXPIRATION_TIME = MIN_DATE;
-
+    private static final int DEFAULT_TOKEN_EXPIRATION_IN = 604800;
+    
     private final Date expires;
     private final List<String> permissions;
     private final String token;
@@ -202,7 +203,11 @@ public final class AccessToken implements Serializable {
     static AccessToken createFromWebBundle(List<String> requestedPermissions, Bundle bundle, AccessTokenSource source) {
         Date expires = getBundleLongAsDate(bundle, EXPIRES_IN_KEY, new Date());
         String token = bundle.getString(ACCESS_TOKEN_KEY);
-
+        if(expires==null) 
+        {
+        	expires=new Date();
+        	expires.setTime(expires.getTime()+DEFAULT_TOKEN_EXPIRATION_IN * 1000L);
+        }
         return createNew(requestedPermissions, token, expires, source);
     }
 

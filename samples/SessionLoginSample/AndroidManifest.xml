@@ -30,7 +30,16 @@
                   android:theme="@android:style/Theme.Translucent.NoTitleBar"
                   android:label="@string/app_name" />
         <activity android:name=".LoginUsingLoginFragmentActivity"/>
+        <activity android:name="tw.com.funtown.LoginActivity"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  android:label="@string/app_name" />
+        <activity
+                android:name=".LoginUsingFuntownActivityActivity">
+        </activity>              
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/applicationId" />
+       <meta-data android:name="tw.com.funtown.sdk.ClientId" android:value="@string/client_id" />
+       <meta-data android:name="tw.com.funtown.sdk.RedirectUri" android:value="@string/redirect_uri" />
+       
     </application>
 
 </manifest>

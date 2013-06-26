@@ -27,7 +27,8 @@ public class SessionLoginSampleActivity extends Activity {
     private Button buttonLoginActivity;
     private Button buttonCustomFragment;
     private Button buttonLoginFragment;
-
+    private Button buttonLoginActivityFuntown;
+    
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -68,5 +69,14 @@ public class SessionLoginSampleActivity extends Activity {
                 startActivity(intent);
             }
         });
+        
+        buttonLoginActivityFuntown = (Button) findViewById(R.id.buttonLoginFuntownActivity);
+        buttonLoginActivityFuntown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(SessionLoginSampleActivity.this, LoginUsingFuntownActivityActivity.class);
+                startActivity(intent);
+            }
+        });        
     }
 }

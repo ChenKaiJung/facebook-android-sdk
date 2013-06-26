@@ -36,7 +36,7 @@ import com.facebook.android.R;
  * Do not start this activity directly.
  */
 public class LoginActivity extends Activity {
-    static final String RESULT_KEY = "com.facebook.LoginActivity:Result";
+    static final String RESULT_KEY = "tw.com.funtown.LoginActivity:Result";
 
     private static final String NULL_CALLING_PKG_ERROR_MSG =
             "Cannot call LoginActivity with a null calling package. " +

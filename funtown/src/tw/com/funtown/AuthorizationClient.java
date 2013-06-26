@@ -41,11 +41,13 @@ import java.util.List;
 
 class AuthorizationClient implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final String TAG = "Facebook-AuthorizationClient";
+    private static final String TAG = "Funtown-AuthorizationClient";
     private static final String WEB_VIEW_AUTH_HANDLER_STORE =
-            "com.facebook.AuthorizationClient.WebViewAuthHandler.TOKEN_STORE_KEY";
+            "tw.com.funtown.AuthorizationClient.WebViewAuthHandler.TOKEN_STORE_KEY";
     private static final String WEB_VIEW_AUTH_HANDLER_TOKEN_KEY = "TOKEN";
-
+    private static final String AUTH_CODE_KEY = "code";
+    private static final String SESSION_KEY_KEY = "session_key";   
+    
     List<AuthHandler> handlersToTry;
     AuthHandler currentHandler;
     transient Context context;
@@ -487,8 +489,17 @@ class AuthorizationClient implements Serializable {
             if (values != null) {
                 AccessToken token = AccessToken
                         .createFromWebBundle(request.getPermissions(), values, AccessTokenSource.WEB_VIEW);
-                outcome = Result.createTokenResult(token);
-
+                if(values.getString(AUTH_CODE_KEY) != null) {
+                	outcome = Result.createCodeResult(values.getString(AUTH_CODE_KEY));                	
+                }
+                else if(token!=null 
+                		&& values.getString(SESSION_KEY_KEY)!=null) {
+                	outcome = Result.createTokenResult(token, values.getString(SESSION_KEY_KEY));                 	  	
+                }
+                else 
+                {
+                	outcome = Result.createTokenResult(token);
+                }
                 // Ensure any cookies set by the dialog are saved
                 // This is to work around a bug where CookieManager may fail to instantiate if CookieSyncManager
                 // has never been created.
@@ -827,20 +838,32 @@ class AuthorizationClient implements Serializable {
 
         final Code code;
         final AccessToken token;
+        final String authCode; 
+        final String sessionKey;         
         final String errorMessage;
 
-        private Result(Code code, AccessToken token, String errorMessage) {
+        private Result(Code code, String authCode, AccessToken token, String SessionKey,String errorMessage) {
             this.token = token;
             this.errorMessage = errorMessage;
+            this.authCode=authCode;
+            this.sessionKey=SessionKey;            
             this.code = code;
         }
 
         static Result createTokenResult(AccessToken token) {
-            return new Result(Code.SUCCESS, token, null);
+            return new Result(Code.SUCCESS, null,token, null, null);
+        }
+        
+        static Result createCodeResult(String authCode) {
+            return new Result(Code.SUCCESS, authCode, null, null, null);
         }
 
+        static Result createTokenResult(AccessToken token,String sessionKey) {
+            return new Result(Code.SUCCESS, null, token, sessionKey, null);
+        }        
+        
         static Result createCancelResult(String message) {
-            return new Result(Code.CANCEL, null, message);
+            return new Result(Code.CANCEL, null, null, null, message);
         }
 
         static Result createErrorResult(String errorType, String errorDescription) {
@@ -848,7 +871,7 @@ class AuthorizationClient implements Serializable {
             if (errorDescription != null) {
                 message += ": " + errorDescription;
             }
-            return new Result(Code.ERROR, null, message);
+            return new Result(Code.ERROR, null, null, null, message);
         }
     }
 }

@@ -21,7 +21,7 @@ public final class FuntownRequestError {
 
     /** Represents an invalid or unknown error code from the server. */
     public static final int INVALID_ERROR_CODE = -1;
-
+    public static final int SUCCESS_ERROR_CODE = 100;
     /**
      * Indicates that there was no valid HTTP status code returned, indicating
      * that either the error occurred locally, before the request was sent, or

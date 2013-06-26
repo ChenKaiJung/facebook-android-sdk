@@ -26,5 +26,9 @@
     <string name="instructions">Login to create a link to fetch account data</string>
     <string name="logout">Log out</string>
     <string name="applicationId">380615018626574</string>
-
+    <string name="login_using_funtown_activity">Login using Funtown Activity</string>
+    <string name="funtownLogin">Login Funtown</string>
+     <string name="funtownLogout">Log out Funtown</string>  
+    <string name="client_id">2</string>
+    <string name="redirect_uri">http://newpartner.funtown.com.tw/mappingpage/index.php%3Fprovider%3Dfuntown%26client_id%3D2%26game_uri%3D68747470733a2f2f7765626c6f67696e2e66756e746f776e2e636f6d2e74772f6f617574682f6c6f67696e5f737563636573732e68746d6c3f73657373696f6e5f6b65793d</string>           
 </resources>
