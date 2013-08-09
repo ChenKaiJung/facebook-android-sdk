@@ -17,7 +17,7 @@
 package tw.com.funtown;
 
 import android.os.Bundle;
-import com.facebook.internal.Validate;
+import tw.com.funtown.internal.Validate;
 
 import java.util.ArrayList;
 import java.util.Date;

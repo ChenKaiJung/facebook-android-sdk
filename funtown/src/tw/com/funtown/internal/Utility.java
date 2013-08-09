@@ -27,7 +27,6 @@ import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import tw.com.funtown.*;
-import com.facebook.android.BuildConfig;
 import com.facebook.model.GraphObject;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -312,6 +311,7 @@ public final class Utility {
         clearCookiesForDomain(context, ".funtown.com.tw");
         clearCookiesForDomain(context, "https://funtown.com.tw");
         clearCookiesForDomain(context, "https://.funtown.com.tw");
+        clearCookiesForDomain(context, "https://weblogin.funtown.com.tw");        
     }
 
     public static void logd(String tag, Exception e) {

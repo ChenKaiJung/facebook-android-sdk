@@ -378,7 +378,8 @@ public class TestSession extends Session {
 
         AccessToken accessToken = AccessToken.createFromString(testAccount.getAccessToken(), requestedPermissions,
                 AccessTokenSource.TEST_USER);
-        finishAuthOrReauth(accessToken, null);
+        //finishAuthOrReauth(accessToken, null);
+        finishAuthOrReauth(null, accessToken, null, null);        
     }
 
     private TestAccount createTestAccountAndFinishAuth() {
@@ -401,7 +402,8 @@ public class TestSession extends Session {
         FacebookRequestError error = response.getError();
         TestAccount testAccount = response.getGraphObjectAs(TestAccount.class);
         if (error != null) {
-            finishAuthOrReauth(null, error.getException());
+            //finishAuthOrReauth(null, error.getException());
+            finishAuthOrReauth(null, null, null, error.getException());
             return null;
         } else {
             assert testAccount != null;

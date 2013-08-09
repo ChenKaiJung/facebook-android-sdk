@@ -33,6 +33,7 @@ public final class ServerProtocol {
     public static final String DIALOG_PARAM_CLIENT_ID = "client_id";
     public static final String DIALOG_PARAM_DISPLAY = "display";
     public static final String DIALOG_PARAM_REDIRECT_URI = "redirect_uri";
+    public static final String DIALOG_PARAM_RESPONSE_TYPE = "response_type";    
     public static final String DIALOG_PARAM_TYPE = "type";
     public static final String DIALOG_PARAM_ACCESS_TOKEN = "access_token";
     public static final String DIALOG_PARAM_APP_ID = "app_id";

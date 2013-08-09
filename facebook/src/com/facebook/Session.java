@@ -31,6 +31,9 @@ import java.io.*;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
+
+import com.facebook.AccessToken;
+
 /**
  * <p>
  * Session is used to authenticate a user and manage the user's session with
@@ -111,7 +114,8 @@ public class Session implements Serializable {
      * application/meta-data using this String as the key.
      */
     public static final String APPLICATION_ID_PROPERTY = "com.facebook.sdk.ApplicationId";
-
+    public static final String REDIRECT_URI_PROPERTY = "com.facebook.sdk.RedirectUri";
+    
     private static final Object STATIC_LOCK = new Object();
     private static Session activeSession;
     private static volatile Context staticContext;
@@ -135,9 +139,12 @@ public class Session implements Serializable {
 
     private String applicationId;
     private SessionState state;
+    private String authCode;    
     private AccessToken tokenInfo;
+    private String sessionKey;     
     private Date lastAttemptedTokenExtendDate = new Date(0);
-
+    private String redirectUri;
+    
     private AuthorizationRequest pendingRequest;
     private AuthorizationClient authorizationClient;
 
@@ -223,6 +230,10 @@ public class Session implements Serializable {
 
         Validate.notNull(applicationId, "applicationId");
 
+        if ((context != null) && (this.redirectUri == null)) {
+        	this.redirectUri = Utility.getMetadataRedirctUri(context);
+        }                
+        
         initializeStaticContext(context);
 
         if (tokenCachingStrategy == null) {
@@ -318,7 +329,14 @@ public class Session implements Serializable {
             return (this.tokenInfo == null) ? null : this.tokenInfo.getToken();
         }
     }
-
+    
+    public final String getAuthCode() {
+        return this.authCode;
+    }
+    
+    public final String getSessionKey() {
+        return this.sessionKey;
+    }  
     /**
      * <p>
      * Returns the Date at which the current token will expire.
@@ -551,7 +569,8 @@ public class Session implements Serializable {
             exception = new FacebookOperationCanceledException("User canceled operation.");
         }
 
-        finishAuthOrReauth(newToken, exception);
+        //finishAuthOrReauth(newToken, exception);
+        finishAuthOrReauth(null,newToken, null,exception);        
         return true;
     }
 
@@ -884,7 +903,8 @@ public class Session implements Serializable {
         boolean started = false;
 
         request.setApplicationId(applicationId);
-
+        request.setRedirectUri(redirectUri);
+        
         autoPublishAsync();
 
         started = tryLoginActivity(request);
@@ -1036,6 +1056,8 @@ public class Session implements Serializable {
         if (resultCode == Activity.RESULT_OK) {
             if (result.code == AuthorizationClient.Result.Code.SUCCESS) {
                 newToken = result.token;
+                authCode = result.authCode;
+                sessionKey= result.sessionKey;                
             } else {
                 exception = new FacebookAuthorizationException(result.errorMessage);
             }
@@ -1044,7 +1066,8 @@ public class Session implements Serializable {
         }
 
         authorizationClient = null;
-        finishAuthOrReauth(newToken, exception);
+        finishAuthOrReauth(authCode, newToken, sessionKey, exception);        
+        //finishAuthOrReauth(newToken, exception);
     }
 
     private boolean tryLoginActivity(AuthorizationRequest request) {
@@ -1105,7 +1128,8 @@ public class Session implements Serializable {
     }
 
     @SuppressWarnings("incomplete-switch")
-    void finishAuthOrReauth(AccessToken newToken, Exception exception) {
+    //void finishAuthOrReauth(AccessToken newToken, Exception exception) {
+    void finishAuthOrReauth(String authCode, AccessToken newToken, String sessonKey, Exception exception) {    
         // If the token we came up with is expired/invalid, then auth failed.
         if ((newToken != null) && newToken.isInvalid()) {
             newToken = null;
@@ -1113,6 +1137,10 @@ public class Session implements Serializable {
         }
 
         synchronized (this.lock) {
+        	
+        	this.authCode = authCode;
+        	this.sessionKey = sessonKey;
+        	
             switch (this.state) {
                 case OPENING:
                     // This means we are authorizing for the first time in this Session.
@@ -1519,13 +1547,15 @@ public class Session implements Serializable {
         private static final long serialVersionUID = 1L;
 
         private final StartActivityDelegate startActivityDelegate;
-        private SessionLoginBehavior loginBehavior = SessionLoginBehavior.SSO_WITH_FALLBACK;
+        //private SessionLoginBehavior loginBehavior = SessionLoginBehavior.SSO_WITH_FALLBACK;
+        private SessionLoginBehavior loginBehavior = SessionLoginBehavior.SUPPRESS_SSO;
         private int requestCode = DEFAULT_AUTHORIZE_ACTIVITY_CODE;
         private StatusCallback statusCallback;
         private boolean isLegacy = false;
         private List<String> permissions = Collections.emptyList();
         private SessionDefaultAudience defaultAudience = SessionDefaultAudience.FRIENDS;
         private String applicationId;
+        private String redirectUri;         
         private String validateSameFbidAsToken;
 
         AuthorizationRequest(final Activity activity) {
@@ -1662,6 +1692,14 @@ public class Session implements Serializable {
             this.applicationId = applicationId;
         }
 
+        String getRedirectUri() {
+            return redirectUri;
+        }
+
+        void setRedirectUri(String redirectUri) {
+            this.redirectUri = redirectUri;
+        }          
+        
         String getValidateSameFbidAsToken() {
             return validateSameFbidAsToken;
         }
@@ -1682,8 +1720,10 @@ public class Session implements Serializable {
                     return startActivityDelegate.getActivityContext();
                 }
             };
+//            return new AuthorizationClient.AuthorizationRequest(loginBehavior, requestCode, isLegacy,
+//                    permissions, defaultAudience, applicationId, validateSameFbidAsToken, delegate);
             return new AuthorizationClient.AuthorizationRequest(loginBehavior, requestCode, isLegacy,
-                    permissions, defaultAudience, applicationId, validateSameFbidAsToken, delegate);
+                    permissions, defaultAudience, applicationId, redirectUri, validateSameFbidAsToken, delegate);
         }
 
         // package private so subclasses can use it

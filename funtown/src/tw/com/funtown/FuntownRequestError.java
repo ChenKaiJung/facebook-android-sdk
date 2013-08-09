@@ -1,6 +1,5 @@
 package tw.com.funtown;
 
-import com.facebook.android.R;
 import tw.com.funtown.internal.Utility;
 import org.json.JSONException;
 import org.json.JSONObject;

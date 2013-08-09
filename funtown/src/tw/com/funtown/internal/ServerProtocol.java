@@ -16,7 +16,7 @@
 
 package tw.com.funtown.internal;
 
-import com.facebook.internal.Utility;
+import tw.com.funtown.internal.Utility;
 
 import java.util.Collection;
 

@@ -4,7 +4,7 @@
     android:versionCode="1"
     android:versionName="1.0" >
 
-    <uses-sdk android:minSdkVersion="8" />
+    <uses-sdk android:minSdkVersion="7" />
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
@@ -37,8 +37,10 @@
                 android:name=".LoginUsingFuntownActivityActivity">
         </activity>              
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/applicationId" />
+       <meta-data android:name="com.facebook.sdk.RedirectUri" android:value="@string/facebook_redirect_uri" />
+        
        <meta-data android:name="tw.com.funtown.sdk.ClientId" android:value="@string/client_id" />
-       <meta-data android:name="tw.com.funtown.sdk.RedirectUri" android:value="@string/redirect_uri" />
+       <meta-data android:name="tw.com.funtown.sdk.RedirectUri" android:value="@string/funtown_redirect_uri" />
        
     </application>
 

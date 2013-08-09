@@ -53,8 +53,10 @@ public class WebDialog extends Dialog {
     private static final String LOG_TAG = Logger.LOG_TAG_BASE + "WebDialog";
     private static final String DISPLAY_TOUCH = "touch";
     private static final String USER_AGENT = "user_agent";
+    static final String SUCCESS_REDIRECT_URI = "weblogin.funtown.com.tw/oauth/login_success.html";        
     static final String REDIRECT_URI = "fbconnect://success";
     static final String CANCEL_URI = "fbconnect://cancel";
+    static final String MAPPING_REDIRECT_URI = "newpartner.funtown.com.tw/mappingpage";        
     static final boolean DISABLE_SSL_CHECK_FOR_TESTING = false;
 
     public static final int DEFAULT_THEME = android.R.style.Theme_Translucent_NoTitleBar;
@@ -123,7 +125,9 @@ public class WebDialog extends Dialog {
             parameters = new Bundle();
         }
         parameters.putString(ServerProtocol.DIALOG_PARAM_DISPLAY, DISPLAY_TOUCH);
-        parameters.putString(ServerProtocol.DIALOG_PARAM_TYPE, USER_AGENT);
+        //if you add type=user_agent, facebook will return access_token
+        //parameters.putString(ServerProtocol.DIALOG_PARAM_TYPE, USER_AGENT);
+        String redirect_uri=parameters.getString(ServerProtocol.DIALOG_PARAM_REDIRECT_URI);
 
         Uri uri = Utility.buildUri(ServerProtocol.DIALOG_AUTHORITY, ServerProtocol.DIALOG_PATH + action, parameters);
         this.url = uri.toString();
@@ -285,7 +289,7 @@ public class WebDialog extends Dialog {
         @SuppressWarnings("deprecation")
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             Utility.logd(LOG_TAG, "Redirect URL: " + url);
-            if (url.startsWith(WebDialog.REDIRECT_URI)) {
+            if (url.contains(WebDialog.SUCCESS_REDIRECT_URI)) {
                 Bundle values = Util.parseUrl(url);
 
                 String error = values.getString("error");
@@ -320,6 +324,8 @@ public class WebDialog extends Dialog {
 
                 WebDialog.this.dismiss();
                 return true;
+            } else if (url.contains(MAPPING_REDIRECT_URI)) {    	
+                return false;            	            	                
             } else if (url.startsWith(WebDialog.CANCEL_URI)) {
                 sendCancelToListener();
                 WebDialog.this.dismiss();

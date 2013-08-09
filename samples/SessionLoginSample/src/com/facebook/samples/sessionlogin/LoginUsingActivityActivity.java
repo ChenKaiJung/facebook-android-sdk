@@ -89,7 +89,8 @@ public class LoginUsingActivityActivity extends Activity {
     private void updateView() {
         Session session = Session.getActiveSession();
         if (session.isOpened()) {
-            textInstructionsOrLink.setText(URL_PREFIX_FRIENDS + session.getAccessToken());
+            textInstructionsOrLink.setText(URL_PREFIX_FRIENDS + session.getAccessToken() + "&session_key=" + session.getSessionKey());        	
+//            textInstructionsOrLink.setText(URL_PREFIX_FRIENDS + session.getAccessToken());
             buttonLoginLogout.setText(R.string.logout);
             buttonLoginLogout.setOnClickListener(new OnClickListener() {
                 public void onClick(View view) { onClickLogout(); }

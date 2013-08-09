@@ -34,9 +34,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -170,7 +172,21 @@ public final class Utility {
 
         return null;
     }
+    public static String getMetadataRedirctUri(Context context) {
+        try {
+            ApplicationInfo ai = context.getPackageManager().getApplicationInfo(
+                    context.getPackageName(), PackageManager.GET_META_DATA);
+            if (ai.metaData != null) {
+                return URLDecoder.decode(ai.metaData.getString(Session.REDIRECT_URI_PROPERTY),"UTF-8");
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            // if we can't find it in the manifest, just return null
+        } catch (UnsupportedEncodingException e ) {
+        	
+        }
 
+        return null;
+    }   
     static Map<String, Object> convertJSONObjectToHashMap(JSONObject jsonObject) {
         HashMap<String, Object> map = new HashMap<String, Object>();
         JSONArray keys = jsonObject.names();

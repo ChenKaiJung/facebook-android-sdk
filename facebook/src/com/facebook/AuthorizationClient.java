@@ -39,13 +39,20 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
+import com.facebook.AccessToken;
+
+
 class AuthorizationClient implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final String TAG = "Facebook-AuthorizationClient";
     private static final String WEB_VIEW_AUTH_HANDLER_STORE =
             "com.facebook.AuthorizationClient.WebViewAuthHandler.TOKEN_STORE_KEY";
     private static final String WEB_VIEW_AUTH_HANDLER_TOKEN_KEY = "TOKEN";
-
+    private static final String AUTH_CODE_KEY = "code";
+    private static final String SESSION_KEY_KEY = "session_key"; 
+    
     List<AuthHandler> handlersToTry;
     AuthHandler currentHandler;
     transient Context context;
@@ -457,6 +464,14 @@ class AuthorizationClient implements Serializable {
                 Utility.clearFacebookCookies(context);
             }
 
+            String redirectUri = request.getRedirectUri();
+            if (!Utility.isNullOrEmpty(redirectUri)) {
+                parameters.putString(ServerProtocol.DIALOG_PARAM_REDIRECT_URI, redirectUri);
+            } else {
+                // The call to clear cookies will create the first instance of CookieSyncManager if necessary
+                parameters.putString(ServerProtocol.DIALOG_PARAM_REDIRECT_URI, "ftconnect://success");
+            }               
+            
             WebDialog.OnCompleteListener listener = new WebDialog.OnCompleteListener() {
                 @Override
                 public void onComplete(Bundle values, FacebookException error) {
@@ -479,8 +494,18 @@ class AuthorizationClient implements Serializable {
             if (values != null) {
                 AccessToken token = AccessToken
                         .createFromWebBundle(request.getPermissions(), values, AccessTokenSource.WEB_VIEW);
-                outcome = Result.createTokenResult(token);
-
+                //outcome = Result.createTokenResult(token);
+                if(values.getString(AUTH_CODE_KEY) != null) {
+                	outcome = Result.createCodeResult(values.getString(AUTH_CODE_KEY));                	
+                }
+                else if(token!=null 
+                		&& values.getString(SESSION_KEY_KEY)!=null) {
+                	outcome = Result.createTokenResult(token, values.getString(SESSION_KEY_KEY));                 	  	
+                }
+                else 
+                {
+                	outcome = Result.createTokenResult(token);
+                }
                 // Ensure any cookies set by the dialog are saved
                 // This is to work around a bug where CookieManager may fail to instantiate if CookieSyncManager
                 // has never been created.
@@ -713,7 +738,8 @@ class AuthorizationClient implements Serializable {
 
     static class AuthDialogBuilder extends WebDialog.Builder {
         private static final String OAUTH_DIALOG = "oauth";
-        static final String REDIRECT_URI = "fbconnect://success";
+        //static final String REDIRECT_URI = "fbconnect://success";
+        static final String RESPONSE_TYPE = "code";        
 
         public AuthDialogBuilder(Context context, String applicationId, Bundle parameters) {
             super(context, applicationId, OAUTH_DIALOG, parameters);
@@ -722,9 +748,10 @@ class AuthorizationClient implements Serializable {
         @Override
         public WebDialog build() {
             Bundle parameters = getParameters();
-            parameters.putString(ServerProtocol.DIALOG_PARAM_REDIRECT_URI, REDIRECT_URI);
+            //parameters.putString(ServerProtocol.DIALOG_PARAM_REDIRECT_URI, REDIRECT_URI);
             parameters.putString(ServerProtocol.DIALOG_PARAM_CLIENT_ID, getApplicationId());
-
+            parameters.putString(ServerProtocol.DIALOG_PARAM_RESPONSE_TYPE, RESPONSE_TYPE);
+            
             return new WebDialog(getContext(), OAUTH_DIALOG, parameters, getTheme(), getListener());
         }
     }
@@ -740,16 +767,22 @@ class AuthorizationClient implements Serializable {
         private SessionDefaultAudience defaultAudience;
         private String applicationId;
         private String previousAccessToken;
-
+        private String redirectUri;
+        
+        //AuthorizationRequest(SessionLoginBehavior loginBehavior, int requestCode, boolean isLegacy,
+        //        List<String> permissions, SessionDefaultAudience defaultAudience, String applicationId,
+        //        String validateSameFbidAsToken, StartActivityDelegate startActivityDelegate) {
         AuthorizationRequest(SessionLoginBehavior loginBehavior, int requestCode, boolean isLegacy,
-                List<String> permissions, SessionDefaultAudience defaultAudience, String applicationId,
+                List<String> permissions, SessionDefaultAudience defaultAudience, String applicationId,String redirectUri,
                 String validateSameFbidAsToken, StartActivityDelegate startActivityDelegate) {
+        
             this.loginBehavior = loginBehavior;
             this.requestCode = requestCode;
             this.isLegacy = isLegacy;
             this.permissions = permissions;
             this.defaultAudience = defaultAudience;
             this.applicationId = applicationId;
+            this.redirectUri=redirectUri;            
             this.previousAccessToken = validateSameFbidAsToken;
             this.startActivityDelegate = startActivityDelegate;
 
@@ -783,6 +816,10 @@ class AuthorizationClient implements Serializable {
             return applicationId;
         }
 
+        String getRedirectUri() {
+            return redirectUri;
+        }
+        
         boolean isLegacy() {
             return isLegacy;
         }
@@ -812,20 +849,35 @@ class AuthorizationClient implements Serializable {
 
         final Code code;
         final AccessToken token;
+        final String authCode; 
+        final String sessionKey;           
         final String errorMessage;
 
-        private Result(Code code, AccessToken token, String errorMessage) {
+//        private Result(Code code, AccessToken token, String errorMessage) {
+        private Result(Code code, String authCode, AccessToken token, String SessionKey,String errorMessage) {        
             this.token = token;
             this.errorMessage = errorMessage;
-            this.code = code;
+            this.authCode=authCode;
+            this.sessionKey=SessionKey;            
+            this.code = code;         
         }
 
         static Result createTokenResult(AccessToken token) {
-            return new Result(Code.SUCCESS, token, null);
+            //return new Result(Code.SUCCESS, token, null);
+            return new Result(Code.SUCCESS, null,token, null, null);        	
         }
 
+        static Result createCodeResult(String authCode) {
+            return new Result(Code.SUCCESS, authCode, null, null, null);
+        }    
+        
+        static Result createTokenResult(AccessToken token,String sessionKey) {
+            return new Result(Code.SUCCESS, null, token, sessionKey, null);
+        }        
+                
         static Result createCancelResult(String message) {
-            return new Result(Code.CANCEL, null, message);
+            //return new Result(Code.CANCEL, null, message);
+            return new Result(Code.CANCEL, null, null, null, message);        	
         }
 
         static Result createErrorResult(String errorType, String errorDescription) {
@@ -833,7 +885,8 @@ class AuthorizationClient implements Serializable {
             if (errorDescription != null) {
                 message += ": " + errorDescription;
             }
-            return new Result(Code.ERROR, null, message);
+            //return new Result(Code.ERROR, null, message);
+            return new Result(Code.ERROR, null, null, null, message);            
         }
     }
 }

@@ -24,7 +24,7 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.Signature;
 import android.os.Bundle;
 import android.text.TextUtils;
-import com.facebook.internal.Utility;
+import tw.com.funtown.internal.Utility;
 
 import java.util.ArrayList;
 import java.util.List;

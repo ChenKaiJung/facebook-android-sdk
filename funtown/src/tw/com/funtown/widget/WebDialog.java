@@ -51,11 +51,13 @@ import tw.com.funtown.*;
 public class WebDialog extends Dialog {
     private static final String LOG_TAG = Logger.LOG_TAG_BASE + "WebDialog";
     private static final String DISPLAY_TOUCH = "touch";
-    private static final String GAME_URI = "game_uri";    
+    //private static final String GAME_URI = "game_uri";    
     private static final String VIEW_REG = "reg_mobile";    
     private static final String USER_AGENT = "user_agent";
     static final String REDIRECT_URI = "ftconnect://success";
     static final String SUCCESS_REDIRECT_URI = "weblogin.funtown.com.tw/oauth/login_success.html";    
+    static final String WEB_LOGIN_URI = "weblogin.funtown.com.tw";     
+    static final String MAPPING_REDIRECT_URI = "newpartner.funtown.com.tw/mappingpage";    
     static final String CANCEL_URI = "ftconnect://cancel";
     static final boolean DISABLE_SSL_CHECK_FOR_TESTING = false;
 
@@ -321,10 +323,12 @@ public class WebDialog extends Dialog {
                 }
 
                 WebDialog.this.dismiss();
-                return true;
-            } else if (url.contains(GAME_URI)) {    	
+                return true;           
+            } else if (url.contains(MAPPING_REDIRECT_URI)) {    	
                 return false;            	
-            } else if (url.startsWith(WebDialog.CANCEL_URI)) {
+            } else if (url.contains(WEB_LOGIN_URI)) {    	
+                return false;            	
+            }else if (url.startsWith(WebDialog.CANCEL_URI)) {
                 sendCancelToListener();
                 WebDialog.this.dismiss();
                 return true;
