@@ -213,7 +213,7 @@ public class Session implements Serializable {
      * @param currentContext The Activity or Service creating this Session.
      */
     public Session(Context currentContext) {
-        this(currentContext, null, null, true);
+        this(currentContext, null, null, false);
     }
 
     Session(Context context, String applicationId, TokenCachingStrategy tokenCachingStrategy) {

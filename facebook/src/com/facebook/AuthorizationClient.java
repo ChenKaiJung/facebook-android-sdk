@@ -461,7 +461,7 @@ class AuthorizationClient implements Serializable {
                 parameters.putString(ServerProtocol.DIALOG_PARAM_ACCESS_TOKEN, previousToken);
             } else {
                 // The call to clear cookies will create the first instance of CookieSyncManager if necessary
-                Utility.clearFacebookCookies(context);
+                //Utility.clearFacebookCookies(context);
             }
 
             String redirectUri = request.getRedirectUri();
