@@ -217,7 +217,7 @@ public class Session implements Serializable {
     }
 
     Session(Context context, String applicationId, TokenCachingStrategy tokenCachingStrategy) {
-        this(context, applicationId, tokenCachingStrategy, true);
+        this(context, applicationId, tokenCachingStrategy, false);
     }
 
     Session(Context context, String applicationId, TokenCachingStrategy tokenCachingStrategy,
