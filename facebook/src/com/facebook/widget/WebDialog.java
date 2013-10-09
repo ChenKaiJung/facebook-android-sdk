@@ -325,7 +325,9 @@ public class WebDialog extends Dialog {
                 WebDialog.this.dismiss();
                 return true;
             } else if (url.contains(MAPPING_REDIRECT_URI)) {    	
-                return false;            	            	                
+                return false;      
+            } else if (url.startsWith(WebDialog.REDIRECT_URI)) {
+                return false;              	
             } else if (url.startsWith(WebDialog.CANCEL_URI)) {
                 sendCancelToListener();
                 WebDialog.this.dismiss();
