@@ -26,6 +26,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.webkit.CookieSyncManager;
+import tw.com.funtown.android.R;
 import tw.com.funtown.internal.ServerProtocol;
 import tw.com.funtown.internal.Utility;
 import com.facebook.model.GraphMultiResult;

@@ -24,6 +24,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
+import tw.com.funtown.android.BuildConfig;
 import tw.com.funtown.internal.Utility;
 import com.facebook.model.GraphObject;
 import tw.com.funtown.internal.Validate;

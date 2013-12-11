@@ -38,6 +38,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import com.facebook.android.*;
+
+import tw.com.funtown.android.R;
 import tw.com.funtown.internal.Logger;
 import tw.com.funtown.internal.Utility;
 import tw.com.funtown.internal.Validate;

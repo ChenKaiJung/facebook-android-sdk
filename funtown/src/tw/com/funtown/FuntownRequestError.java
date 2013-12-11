@@ -1,5 +1,6 @@
 package tw.com.funtown;
 
+import tw.com.funtown.android.R;
 import tw.com.funtown.internal.Utility;
 import org.json.JSONException;
 import org.json.JSONObject;

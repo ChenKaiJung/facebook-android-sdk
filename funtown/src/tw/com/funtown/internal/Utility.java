@@ -27,6 +27,8 @@ import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import tw.com.funtown.*;
+import tw.com.funtown.android.BuildConfig;
+
 import com.facebook.model.GraphObject;
 import org.json.JSONArray;
 import org.json.JSONException;
