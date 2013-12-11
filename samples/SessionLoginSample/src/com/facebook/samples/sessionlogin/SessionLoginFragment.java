@@ -29,6 +29,7 @@ import com.facebook.Session;
 import com.facebook.SessionState;
 import com.facebook.Settings;
 
+
 public class SessionLoginFragment extends Fragment {
     private static final String URL_PREFIX_FRIENDS = "https://graph.facebook.com/me/friends?access_token=";
 

@@ -57,7 +57,6 @@ public class LoginUsingActivityActivity extends Activity {
                 session.openForRead(new Session.OpenRequest(this).setCallback(statusCallback));
             }
         }
-
         updateView();
     }
 
