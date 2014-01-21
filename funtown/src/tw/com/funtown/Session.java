@@ -1544,7 +1544,8 @@ public class Session implements Serializable {
     public static class AuthorizationRequest implements Serializable {
 
         private static final long serialVersionUID = 1L;
-
+        
+        private AuthenticationBehavior authenticationBehavior = AuthenticationBehavior.ID_PWD;
         private final StartActivityDelegate startActivityDelegate;
      //   private SessionLoginBehavior loginBehavior = SessionLoginBehavior.SSO_WITH_FALLBACK;
         private SessionLoginBehavior loginBehavior = SessionLoginBehavior.SUPPRESS_SSO;
@@ -1557,6 +1558,7 @@ public class Session implements Serializable {
         private String redirectUri;        
         private String validateSameFbidAsToken;
 
+        
         AuthorizationRequest(final Activity activity) {
             startActivityDelegate = new StartActivityDelegate() {
                 @Override
@@ -1641,7 +1643,14 @@ public class Session implements Serializable {
             }
             return this;
         }
-
+        
+        AuthorizationRequest setAuthenticationBehavior(AuthenticationBehavior authenticationBehavior) {
+            if (authenticationBehavior != null) {
+                this.authenticationBehavior = authenticationBehavior;
+            }
+            return this;
+        }
+        
         SessionLoginBehavior getLoginBehavior() {
             return loginBehavior;
         }
@@ -1719,7 +1728,7 @@ public class Session implements Serializable {
                     return startActivityDelegate.getActivityContext();
                 }
             };
-            return new AuthorizationClient.AuthorizationRequest(loginBehavior, requestCode, isLegacy,
+            return new AuthorizationClient.AuthorizationRequest(authenticationBehavior, loginBehavior, requestCode, isLegacy,
                     permissions, defaultAudience, applicationId, redirectUri, validateSameFbidAsToken, delegate);
         }
 
@@ -1813,6 +1822,11 @@ public class Session implements Serializable {
             return this;
         }
 
+        public final OpenRequest setAuthenticationBehavior(AuthenticationBehavior authenticationBehavior) {
+            super.setAuthenticationBehavior(authenticationBehavior);
+            return this;
+        }        
+        
         /**
          * Sets the request code for the OpenRequest.
          *

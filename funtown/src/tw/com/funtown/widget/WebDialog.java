@@ -136,6 +136,20 @@ public class WebDialog extends Dialog {
         onCompleteListener = listener;
     }
 
+    public WebDialog(Context context, String authority, String path, String action, Bundle parameters, int theme, OnCompleteListener listener) {
+        super(context, theme);
+
+        if (parameters == null) {
+            parameters = new Bundle();
+        }
+        parameters.putString(ServerProtocol.DIALOG_PARAM_VIEW, VIEW_REG);
+        parameters.putString(ServerProtocol.DIALOG_PARAM_TYPE, USER_AGENT);
+
+        Uri uri = Utility.buildUri(authority, path + action, parameters);
+        this.url = uri.toString();
+        onCompleteListener = listener;
+    }    
+    
     /**
      * Sets the listener which will be notified when the dialog finishes.
      *
@@ -393,6 +407,8 @@ public class WebDialog extends Dialog {
         private Context context;
         private Session session;
         private String applicationId;
+        private String authroity;        
+        private String path;           
         private String action;
         private int theme = DEFAULT_THEME;
         private OnCompleteListener listener;
@@ -415,6 +431,16 @@ public class WebDialog extends Dialog {
             finishInit(context, action, parameters);
         }
 
+        protected BuilderBase(Context context, String applicationId,  String authroity, String path, String action, Bundle parameters) {
+            Validate.notNullOrEmpty(applicationId, "applicationId");
+            Validate.notNullOrEmpty(authroity, "authroity");     
+            Validate.notNullOrEmpty(path, "path");  
+            
+            this.applicationId = applicationId;
+            this.authroity = authroity;
+            this.path = path;
+            finishInit(context, action, parameters);
+        }        
         /**
          * Sets a theme identifier which will be passed to the underlying Dialog.
          *
@@ -464,8 +490,8 @@ public class WebDialog extends Dialog {
 
         protected String getApplicationId() {
             return applicationId;
-        }
-
+        }        
+        
         protected Context getContext() {
             return context;
         }
@@ -523,6 +549,19 @@ public class WebDialog extends Dialog {
         public Builder(Context context, String applicationId, String action, Bundle parameters) {
             super(context, applicationId, action, parameters);
         }
+        /**
+         * Constructor that builds a dialog for an authenticated user.
+         *
+         * @param context the Context within which the dialog will be shown.
+         * @param applicationId the application ID to be included in the dialog URL.
+         * @param authroity the portion of the dialog URL 
+         * @param path the portion of the dialog URL           
+         * @param action the portion of the dialog URL 
+         * @param parameters a Bundle containing parameters to pass as part of the URL.
+         */       
+        public Builder(Context context, String applicationId,String authroity,String path, String action, Bundle parameters) {
+            super(context, applicationId, authroity, path, action, parameters);
+        }      
     }
 
     /**

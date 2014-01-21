@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
+import tw.com.funtown.AuthenticationBehavior;
 import tw.com.funtown.LoggingBehavior;
 import tw.com.funtown.Session;
 import tw.com.funtown.SessionState;
@@ -33,6 +34,7 @@ public class LoginUsingFuntownActivityActivity extends Activity {
 
     private TextView textInstructionsOrLink;
     private Button buttonLoginLogout;
+    private Button buttonUUIDLoginLogout;    
     private Session.StatusCallback statusCallback = new SessionStatusCallback();
 
     @Override
@@ -40,6 +42,7 @@ public class LoginUsingFuntownActivityActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.funtown_activity);
         buttonLoginLogout = (Button)findViewById(R.id.buttonFuntownLoginLogout);
+        buttonUUIDLoginLogout  = (Button)findViewById(R.id.buttonFuntownUUIDLoginLogout);
         textInstructionsOrLink = (TextView)findViewById(R.id.instructionsOrLink);
 
         Settings.addLoggingBehavior(LoggingBehavior.INCLUDE_ACCESS_TOKENS);
@@ -94,12 +97,22 @@ public class LoginUsingFuntownActivityActivity extends Activity {
             buttonLoginLogout.setOnClickListener(new OnClickListener() {
                 public void onClick(View view) { onClickLogout(); }
             });
+            buttonUUIDLoginLogout.setText(R.string.logout);
+            buttonUUIDLoginLogout.setOnClickListener(new OnClickListener() {
+                public void onClick(View view) { onClickLogout(); }
+            });            
+            
         } else {
             textInstructionsOrLink.setText(R.string.instructions);
             buttonLoginLogout.setText(R.string.funtownLogin);
             buttonLoginLogout.setOnClickListener(new OnClickListener() {
                 public void onClick(View view) { onClickLogin(); }
             });
+            buttonUUIDLoginLogout.setText(R.string.funtownUUIDLogin);
+            buttonUUIDLoginLogout.setOnClickListener(new OnClickListener() {
+                public void onClick(View view) { onClickUUIDLogin(); }
+            });                  
+            
         }
     }
 
@@ -111,7 +124,16 @@ public class LoginUsingFuntownActivityActivity extends Activity {
             Session.openActiveSession(this, true, statusCallback);
         }
     }
-
+    private void onClickUUIDLogin() {
+        Session session = Session.getActiveSession();
+        if (!session.isOpened() && !session.isClosed()) {
+        	Session.OpenRequest or= new Session.OpenRequest(this);
+        	or.setAuthenticationBehavior(AuthenticationBehavior.UUID);
+            session.openForRead(or.setCallback(statusCallback));
+        } else {
+            Session.openActiveSession(this, true, statusCallback);
+        }
+    }
     private void onClickLogout() {
         Session session = Session.getActiveSession();
         if (!session.isClosed()) {
