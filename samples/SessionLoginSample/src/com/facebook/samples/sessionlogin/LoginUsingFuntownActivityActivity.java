@@ -92,7 +92,12 @@ public class LoginUsingFuntownActivityActivity extends Activity {
     private void updateView() {
         Session session = Session.getActiveSession();
         if (session.isOpened()) {
-            textInstructionsOrLink.setText(URL_PREFIX_PROFILE + session.getAccessToken() + "&session_key=" + session.getSessionKey());
+        	if(session.getAuthCode() != null){
+        		textInstructionsOrLink.setText("code="+session.getAuthCode());        		
+        	}
+        	else {
+        		textInstructionsOrLink.setText(URL_PREFIX_PROFILE + session.getAccessToken() + "&session_key=" + session.getSessionKey());
+        	}
             buttonLoginLogout.setText(R.string.logout);
             buttonLoginLogout.setOnClickListener(new OnClickListener() {
                 public void onClick(View view) { onClickLogout(); }

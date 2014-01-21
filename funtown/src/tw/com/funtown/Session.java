@@ -1142,7 +1142,10 @@ public class Session implements Serializable {
             switch (this.state) {
                 case OPENING:
                     // This means we are authorizing for the first time in this Session.
-                    finishAuthorization(newToken, exception);
+                	if(authCode != null)  
+                		finishAuthorization(authCode, exception);
+                	else
+                		finishAuthorization(newToken, exception);
                     break;
 
                 case OPENED:
@@ -1169,6 +1172,19 @@ public class Session implements Serializable {
         postStateChange(oldState, state, exception);
     }
 
+    private void finishAuthorization(String code, Exception exception) {
+        final SessionState oldState = state;
+        if (code != null) {
+        	authCode = code;
+
+            state = SessionState.OPENED;
+        } else if (exception != null) {
+            state = SessionState.CLOSED_LOGIN_FAILED;
+        }
+        pendingRequest = null;
+        postStateChange(oldState, state, exception);
+    }    
+    
     private void finishReauthorization(final AccessToken newToken, Exception exception) {
         final SessionState oldState = state;
 
