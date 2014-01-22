@@ -473,10 +473,18 @@ class AuthorizationClient implements Serializable {
                     onWebDialogComplete(request, values, error);
                 }
             };
+            WebDialog.Builder builder;
+			if(request.getauthenticationBehavior() == AuthenticationBehavior.UUID) {
 
-            WebDialog.Builder builder =
-                    new AuthDialogBuilder(getStartActivityDelegate().getActivityContext(), applicationId, parameters)
-                            .setOnCompleteListener(listener);
+				builder = new UUIDAuthDialogBuilder(getStartActivityDelegate()
+						.getActivityContext(), applicationId, parameters)
+						.setOnCompleteListener(listener);
+			}
+			else{
+				builder = new AuthDialogBuilder(getStartActivityDelegate()
+						.getActivityContext(), applicationId, parameters)
+						.setOnCompleteListener(listener);
+			}
             loginDialog = builder.build();
             loginDialog.show();
 
@@ -729,7 +737,30 @@ class AuthorizationClient implements Serializable {
             }
         }
     }
+    static class UUIDAuthDialogBuilder extends WebDialog.Builder {
+        private static final String UUID_AUTHROITY = "newpartner.funtown.com.tw";    
+        private static final String UUID_PATH = "gameview/";         
+        private static final String UUID_DIALOG = "index.php";
+        private static final String UUID_PARAMETER = "uuid";
+        static final String RESPONSE_TYPE = "code";
+        private String uuid;
+        
+        public UUIDAuthDialogBuilder(Context context, String applicationId, Bundle parameters) {
+            super(context, applicationId, UUID_AUTHROITY,UUID_PATH,UUID_DIALOG, parameters);            
+            uuid=Utility.getCurDeviceUUID(context);      
+        }
 
+        @Override
+        public WebDialog build() {
+            Bundle parameters = getParameters();
+            //parameters.putString(ServerProtocol.DIALOG_PARAM_REDIRECT_URI, REDIRECT_URI);
+            parameters.putString(ServerProtocol.DIALOG_PARAM_CLIENT_ID, getApplicationId());
+            parameters.putString(ServerProtocol.DIALOG_PARAM_RESPONSE_TYPE, RESPONSE_TYPE);
+            parameters.putString(UUID_PARAMETER, uuid);
+            return new WebDialog(getContext(), UUID_AUTHROITY,UUID_PATH,UUID_DIALOG, parameters, getTheme(), getListener());
+        }
+    }
+    
     static class AuthDialogBuilder extends WebDialog.Builder {
         private static final String OAUTH_DIALOG = "oauth_mobile.php";
         //static final String REDIRECT_URI = "fbconnect://success";
@@ -754,6 +785,7 @@ class AuthorizationClient implements Serializable {
         private static final long serialVersionUID = 1L;
 
         private transient final StartActivityDelegate startActivityDelegate;
+        private AuthenticationBehavior authenticationBehavior;        
         private SessionLoginBehavior loginBehavior;
         private int requestCode;
         private boolean isLegacy = false;
@@ -763,10 +795,11 @@ class AuthorizationClient implements Serializable {
         private String previousAccessToken;
         private String redirectUri;
         
-        AuthorizationRequest(SessionLoginBehavior loginBehavior, int requestCode, boolean isLegacy,
+        AuthorizationRequest(AuthenticationBehavior authenticationBehavior, SessionLoginBehavior loginBehavior, int requestCode, boolean isLegacy,
                 List<String> permissions, SessionDefaultAudience defaultAudience, String applicationId,String redirectUri,
                 String validateSameFbidAsToken, StartActivityDelegate startActivityDelegate) {
-            this.loginBehavior = loginBehavior;
+            this.authenticationBehavior = authenticationBehavior;
+        	this.loginBehavior = loginBehavior;
             this.requestCode = requestCode;
             this.isLegacy = isLegacy;
             this.permissions = permissions;
@@ -789,7 +822,11 @@ class AuthorizationClient implements Serializable {
         void setPermissions(List<String> permissions) {
             this.permissions = permissions;
         }
-
+        
+        AuthenticationBehavior getauthenticationBehavior(){
+        	return authenticationBehavior;
+        }
+        
         SessionLoginBehavior getLoginBehavior() {
             return loginBehavior;
         }

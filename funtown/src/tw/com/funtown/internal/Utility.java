@@ -364,22 +364,23 @@ public final class Utility {
         }
     }
     public static String getCurDeviceUUID(Context context) {
-    	UUID uuid;      
+    	UUID uuid;   
+    	String uuidString;
         final String androidId = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
 
         try {
             if (!"9774d56d682e549c".equals(androidId) && androidId != null) {
                 uuid = UUID.nameUUIDFromBytes(androidId.getBytes("utf8"));
+                uuidString = "ANDROID_ID-"+uuid.toString();
             } else {
-                final String deviceId = 
-                        ((TelephonyManager) context.getSystemService( Context.TELEPHONY_SERVICE )).getDeviceId();
-                uuid = deviceId != null ? 
-                                UUID.nameUUIDFromBytes(deviceId.getBytes("utf8")) : UUID.randomUUID();
+                final String deviceId =  ((TelephonyManager) context.getSystemService( Context.TELEPHONY_SERVICE )).getDeviceId();
+                uuid = deviceId != null ?  UUID.nameUUIDFromBytes(deviceId.getBytes("utf8")) : UUID.randomUUID();
+                uuidString = "DEVICE_ID-"+uuid.toString();
             }
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
         
-        return uuid.toString();
+        return uuidString;
     }
 }
