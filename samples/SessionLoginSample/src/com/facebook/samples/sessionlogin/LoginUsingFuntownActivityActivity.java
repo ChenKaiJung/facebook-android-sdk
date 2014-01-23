@@ -121,7 +121,7 @@ public class LoginUsingFuntownActivityActivity extends Activity {
     }
     private void onClickUUIDGenerator() {
     	UUID uuid= UUID.getInstance(this);
-    	uuid.GenerateUUID(new UUID.OnUUIDGeneratedListener() {			
+    	uuid.generateUUID(new UUID.OnUUIDGeneratedListener() {			
 			@Override
 			public void onUUIDGenerated(String UUID) {
 	            textInstructionsOrLink.setText("UUID : "+UUID);				

@@ -21,7 +21,7 @@ public class UUID {
         	}
         }
     }
-	public void GenerateUUID(OnUUIDGeneratedListener listener) {
+	public void generateUUID(OnUUIDGeneratedListener listener) {
         String uuid=Utility.getCurDeviceUUID(__ctx); 
         listener.onUUIDGenerated(uuid);
 	}
