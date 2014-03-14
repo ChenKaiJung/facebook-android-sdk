@@ -889,6 +889,7 @@ class AuthorizationClient implements Serializable {
             this.code = code;
             //Bundle can't be Serialize
             values = new HashMap<String, String>();
+            if(bundle == null) return;            
             for (String key : bundle.keySet()) {
             	values.put(key, bundle.getString(key));
             }           

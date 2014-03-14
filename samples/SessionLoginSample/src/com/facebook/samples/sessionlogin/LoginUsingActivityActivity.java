@@ -20,6 +20,8 @@ import tw.com.funtown.UUID;
 import tw.com.funtown.internal.Utility;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -99,6 +101,7 @@ public class LoginUsingActivityActivity extends Activity {
             buttonLoginLogout.setOnClickListener(new OnClickListener() {
                 public void onClick(View view) { onClickLogout(); }
             });
+            buttonUUIDBinding.setClickable(false);              
         } else {
             textInstructionsOrLink.setText(R.string.instructions);
             buttonLoginLogout.setText(R.string.login);
@@ -134,13 +137,30 @@ public class LoginUsingActivityActivity extends Activity {
     	uuid.generateUUID(new UUID.OnUUIDGeneratedListener() {			
 			@Override
 			public void onUUIDGenerated(String UUID) {
-	            textInstructionsOrLink.setText("UUID : "+UUID);	
+	            textInstructionsOrLink.setText("UUID : "+UUID);
+	            String facebookBindingRedirectUri="";
+	            String facebookApplicationId="";
+	            try {
+	                ApplicationInfo ai = ac.getPackageManager().getApplicationInfo(
+	                        ac.getPackageName(), PackageManager.GET_META_DATA);
+	                if (ai.metaData != null) {
+	                	facebookBindingRedirectUri= ai.metaData.getString("com.facebook.sdk.BindingRedirectUri");
+	                	facebookApplicationId= ai.metaData.getString("com.facebook.sdk.ApplicationId");
+	                }
+	            } catch (PackageManager.NameNotFoundException e) {
+	            }	            
+	            
 	            Session session = Session.getActiveSession();
-	            Uri redirectUri = Uri.parse(Utility.getMetadataRedirctUri(ac));
+	            Uri redirectUri = Uri.parse(facebookBindingRedirectUri);
 	            Bundle parameters= new Bundle();
+	            
+	            parameters.putString("provider_id", "facebook");
+	            parameters.putString("client_id", facebookApplicationId);		            
 	            parameters.putString("uuid", UUID);
+	            
 	            Uri redirectUriWithUUID=Utility.buildUri(redirectUri.getAuthority(), redirectUri.getPath(), parameters);
 	            session.setRedirectUri(redirectUriWithUUID.toString());
+	            
 	            if (!session.isOpened() && !session.isClosed()) {
 	                session.openForRead(new Session.OpenRequest(ac).setCallback(statusCallback));
 	            } else {

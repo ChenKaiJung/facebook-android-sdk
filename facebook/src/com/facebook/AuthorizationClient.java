@@ -507,7 +507,7 @@ class AuthorizationClient implements Serializable {
                 }
                 else 
                 {
-                	outcome = Result.createTokenResult(token);
+                	outcome = Result.createTokenBundleResult(token, values);
                 }
                 // Ensure any cookies set by the dialog are saved
                 // This is to work around a bug where CookieManager may fail to instantiate if CookieSyncManager
@@ -864,6 +864,7 @@ class AuthorizationClient implements Serializable {
             this.code = code;     
             //Bundle can't be Serialize
             values = new HashMap<String, String>();
+            if(bundle == null) return;
             for (String key : bundle.keySet()) {
             	values.put(key, bundle.getString(key));
             }    
