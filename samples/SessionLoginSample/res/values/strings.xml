@@ -30,6 +30,8 @@
     <string name="login_using_funtown_activity">Login using Funtown Activity</string>
     <string name="funtownLogin">Login Funtown</string>
     <string name="funtownUUIDGenerator">Generate Device UUID</string>    
+    <string name="funtownUUIDBinding">Binding Account for Funtown</string>
+    <string name="facebookUUIDBinding">Binding Account for Faceboook</string>    
      <string name="funtownLogout">Log out Funtown</string>  
     <string name="client_id">105</string>
     <string name="funtown_redirect_uri">https://weblogin.funtown.com.tw/oauth/login_success.html</string>           

@@ -16,8 +16,11 @@
 
 package com.facebook.samples.sessionlogin;
 
+import tw.com.funtown.UUID;
+import tw.com.funtown.internal.Utility;
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -34,12 +37,14 @@ public class LoginUsingActivityActivity extends Activity {
     private TextView textInstructionsOrLink;
     private Button buttonLoginLogout;
     private Session.StatusCallback statusCallback = new SessionStatusCallback();
-
+    private Button buttonUUIDBinding;   
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity);
         buttonLoginLogout = (Button)findViewById(R.id.buttonLoginLogout);
+        buttonUUIDBinding  = (Button)findViewById(R.id.buttonUUIDBinding);           
         textInstructionsOrLink = (TextView)findViewById(R.id.instructionsOrLink);
 
         Settings.addLoggingBehavior(LoggingBehavior.INCLUDE_ACCESS_TOKENS);
@@ -88,7 +93,7 @@ public class LoginUsingActivityActivity extends Activity {
     private void updateView() {
         Session session = Session.getActiveSession();
         if (session.isOpened()) {
-            textInstructionsOrLink.setText(URL_PREFIX_FRIENDS + session.getAccessToken() + "&session_key=" + session.getSessionKey());        	
+            textInstructionsOrLink.setText(URL_PREFIX_FRIENDS + session.getAccessToken() + "&session_key=" + session.getValues().get("session_key"));        	
 //            textInstructionsOrLink.setText(URL_PREFIX_FRIENDS + session.getAccessToken());
             buttonLoginLogout.setText(R.string.logout);
             buttonLoginLogout.setOnClickListener(new OnClickListener() {
@@ -100,6 +105,10 @@ public class LoginUsingActivityActivity extends Activity {
             buttonLoginLogout.setOnClickListener(new OnClickListener() {
                 public void onClick(View view) { onClickLogin(); }
             });
+            buttonUUIDBinding.setText(R.string.facebookUUIDBinding);
+            buttonUUIDBinding.setOnClickListener(new OnClickListener() {
+                public void onClick(View view) { onClickUUIDBinding(); }
+            });                
         }
     }
 
@@ -118,7 +127,28 @@ public class LoginUsingActivityActivity extends Activity {
             session.closeAndClearTokenInformation();
         }
     }
-
+    
+    private void onClickUUIDBinding() {
+    	UUID uuid= UUID.getInstance(this);
+    	final Activity ac = this;
+    	uuid.generateUUID(new UUID.OnUUIDGeneratedListener() {			
+			@Override
+			public void onUUIDGenerated(String UUID) {
+	            textInstructionsOrLink.setText("UUID : "+UUID);	
+	            Session session = Session.getActiveSession();
+	            Uri redirectUri = Uri.parse(Utility.getMetadataRedirctUri(ac));
+	            Bundle parameters= new Bundle();
+	            parameters.putString("uuid", UUID);
+	            Uri redirectUriWithUUID=Utility.buildUri(redirectUri.getAuthority(), redirectUri.getPath(), parameters);
+	            session.setRedirectUri(redirectUriWithUUID.toString());
+	            if (!session.isOpened() && !session.isClosed()) {
+	                session.openForRead(new Session.OpenRequest(ac).setCallback(statusCallback));
+	            } else {
+	                Session.openActiveSession(ac, true, statusCallback);
+	            }	            
+			}     		
+    	});
+    }
     private class SessionStatusCallback implements Session.StatusCallback {
         @Override
         public void call(Session session, SessionState state, Exception exception) {

@@ -34,5 +34,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/login" />
-
+    
+    <Button
+        android:id="@+id/buttonUUIDBinding"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/funtownLogin" />  
 </LinearLayout>

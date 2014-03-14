@@ -29,6 +29,8 @@ import android.webkit.CookieSyncManager;
 import tw.com.funtown.android.R;
 import tw.com.funtown.internal.ServerProtocol;
 import tw.com.funtown.internal.Utility;
+
+import tw.com.funtown.AccessToken;
 import com.facebook.model.GraphMultiResult;
 import com.facebook.model.GraphObject;
 import com.facebook.model.GraphObjectList;
@@ -37,7 +39,9 @@ import tw.com.funtown.widget.WebDialog;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 class AuthorizationClient implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -498,11 +502,11 @@ class AuthorizationClient implements Serializable {
                 AccessToken token = AccessToken
                         .createFromWebBundle(request.getPermissions(), values, AccessTokenSource.WEB_VIEW);
                 if(values.getString(AUTH_CODE_KEY) != null) {
-                	outcome = Result.createCodeResult(values.getString(AUTH_CODE_KEY));                	
+                	outcome = Result.createCodeBundleResult(values.getString(AUTH_CODE_KEY),values);                	
                 }
                 else if(token!=null 
                 		&& values.getString(SESSION_KEY_KEY)!=null) {
-                	outcome = Result.createTokenResult(token, values.getString(SESSION_KEY_KEY));                 	  	
+                	outcome = Result.createTokenBundleResult(token, values);                 	  	
                 }
                 else 
                 {
@@ -738,9 +742,9 @@ class AuthorizationClient implements Serializable {
         }
     }
     static class UUIDAuthDialogBuilder extends WebDialog.Builder {
-        private static final String UUID_AUTHROITY = "newpartner.funtown.com.tw";    
-        private static final String UUID_PATH = "gameview/";         
-        private static final String UUID_DIALOG = "index.php";
+        private static final String UUID_AUTHROITY = "weblogin.funtown.com.tw";    
+        private static final String UUID_PATH = "oauth/";         
+        private static final String UUID_DIALOG = "oauth_mobile.php";
         private static final String UUID_PARAMETER = "uuid";
         static final String RESPONSE_TYPE = "code";
         private String uuid;
@@ -753,7 +757,6 @@ class AuthorizationClient implements Serializable {
         @Override
         public WebDialog build() {
             Bundle parameters = getParameters();
-            //parameters.putString(ServerProtocol.DIALOG_PARAM_REDIRECT_URI, REDIRECT_URI);
             parameters.putString(ServerProtocol.DIALOG_PARAM_CLIENT_ID, getApplicationId());
             parameters.putString(ServerProtocol.DIALOG_PARAM_RESPONSE_TYPE, RESPONSE_TYPE);
             parameters.putString(UUID_PARAMETER, uuid);
@@ -875,32 +878,40 @@ class AuthorizationClient implements Serializable {
 
         final Code code;
         final AccessToken token;
-        final String authCode; 
-        final String sessionKey;         
+        final String authCode;         
         final String errorMessage;
-
-        private Result(Code code, String authCode, AccessToken token, String SessionKey,String errorMessage) {
+        final Map<String, String>values;
+        
+        private Result(Code code, String authCode, AccessToken token, String errorMessage, Bundle bundle) {
             this.token = token;
             this.errorMessage = errorMessage;
-            this.authCode=authCode;
-            this.sessionKey=SessionKey;            
+            this.authCode=authCode;          
             this.code = code;
+            //Bundle can't be Serialize
+            values = new HashMap<String, String>();
+            for (String key : bundle.keySet()) {
+            	values.put(key, bundle.getString(key));
+            }           
         }
 
         static Result createTokenResult(AccessToken token) {
-            return new Result(Code.SUCCESS, null,token, null, null);
+            return new Result(Code.SUCCESS, null,token,  null , null);
         }
         
         static Result createCodeResult(String authCode) {
             return new Result(Code.SUCCESS, authCode, null, null, null);
         }
-
-        static Result createTokenResult(AccessToken token,String sessionKey) {
-            return new Result(Code.SUCCESS, null, token, sessionKey, null);
-        }        
+        
+        static Result createCodeBundleResult(String authCode, Bundle bundle) {
+            return new Result(Code.SUCCESS, authCode, null, null, bundle);
+        }   
+ 
+        static Result createTokenBundleResult(AccessToken token, Bundle bundle) {
+            return new Result(Code.SUCCESS, null, token,  null,bundle);
+        }            
         
         static Result createCancelResult(String message) {
-            return new Result(Code.CANCEL, null, null, null, message);
+            return new Result(Code.CANCEL, null, null, message, null);
         }
 
         static Result createErrorResult(String errorType, String errorDescription) {
@@ -908,7 +919,7 @@ class AuthorizationClient implements Serializable {
             if (errorDescription != null) {
                 message += ": " + errorDescription;
             }
-            return new Result(Code.ERROR, null, null, null, message);
+            return new Result(Code.ERROR, null, null, message, null);
         }
     }
 }

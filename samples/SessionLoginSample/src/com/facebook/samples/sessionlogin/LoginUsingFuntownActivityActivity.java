@@ -18,6 +18,7 @@ package com.facebook.samples.sessionlogin;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -28,6 +29,7 @@ import tw.com.funtown.Session;
 import tw.com.funtown.SessionState;
 import tw.com.funtown.Settings;
 import tw.com.funtown.UUID;
+import tw.com.funtown.internal.Utility;
 
 public class LoginUsingFuntownActivityActivity extends Activity {
     private static final String URL_PREFIX_PROFILE = "https://weblogin.funtown.com.tw/oauth/profile.php?access_token=";
@@ -35,6 +37,7 @@ public class LoginUsingFuntownActivityActivity extends Activity {
     private TextView textInstructionsOrLink;
     private Button buttonLoginLogout;
     private Button buttonUUIDGenerator;    
+    private Button buttonUUIDBinding;     
     private Session.StatusCallback statusCallback = new SessionStatusCallback();
 
     @Override
@@ -43,6 +46,7 @@ public class LoginUsingFuntownActivityActivity extends Activity {
         setContentView(R.layout.funtown_activity);
         buttonLoginLogout = (Button)findViewById(R.id.buttonFuntownLoginLogout);
         buttonUUIDGenerator  = (Button)findViewById(R.id.buttonFuntownUUIDGenerator);
+        buttonUUIDBinding  = (Button)findViewById(R.id.buttonFuntownUUIDBinding);               
         textInstructionsOrLink = (TextView)findViewById(R.id.instructionsOrLink);
 
         Settings.addLoggingBehavior(LoggingBehavior.INCLUDE_ACCESS_TOKENS);
@@ -92,7 +96,7 @@ public class LoginUsingFuntownActivityActivity extends Activity {
     private void updateView() {
         Session session = Session.getActiveSession();
         if (session.isOpened()) {
-        	textInstructionsOrLink.setText(URL_PREFIX_PROFILE + session.getAccessToken() + "&session_key=" + session.getSessionKey());
+        	textInstructionsOrLink.setText(URL_PREFIX_PROFILE + session.getAccessToken() + "&session_key=" + session.getValues().get("session_key"));
             buttonLoginLogout.setText(R.string.logout);
             buttonLoginLogout.setOnClickListener(new OnClickListener() {
                 public void onClick(View view) { onClickLogout(); }
@@ -107,7 +111,10 @@ public class LoginUsingFuntownActivityActivity extends Activity {
             buttonUUIDGenerator.setOnClickListener(new OnClickListener() {
                 public void onClick(View view) { onClickUUIDGenerator(); }
             });                  
-            
+            buttonUUIDBinding.setText(R.string.funtownUUIDBinding);
+            buttonUUIDBinding.setOnClickListener(new OnClickListener() {
+                public void onClick(View view) { onClickUUIDBinding(); }
+            });             
         }
     }
 
@@ -134,7 +141,27 @@ public class LoginUsingFuntownActivityActivity extends Activity {
             session.closeAndClearTokenInformation();
         }
     }
-
+    private void onClickUUIDBinding() {
+    	UUID uuid= UUID.getInstance(this);
+    	final Activity ac = this;
+    	uuid.generateUUID(new UUID.OnUUIDGeneratedListener() {			
+			@Override
+			public void onUUIDGenerated(String UUID) {
+	            textInstructionsOrLink.setText("UUID : "+UUID);	
+	            Session session = Session.getActiveSession();
+	            Uri redirectUri = Uri.parse(Utility.getMetadataRedirctUri(ac));
+	            Bundle parameters= new Bundle();
+	            parameters.putString("uuid", UUID);
+	            Uri redirectUriWithUUID=Utility.buildUri(redirectUri.getAuthority(), redirectUri.getPath(), parameters);
+	            session.setRedirectUri(redirectUriWithUUID.toString());
+	            if (!session.isOpened() && !session.isClosed()) {
+	                session.openForRead(new Session.OpenRequest(ac).setCallback(statusCallback));
+	            } else {
+	                Session.openActiveSession(ac, true, statusCallback);
+	            }	            
+			}     		
+    	});
+    }
     private class SessionStatusCallback implements Session.StatusCallback {
         @Override
         public void call(Session session, SessionState state, Exception exception) {

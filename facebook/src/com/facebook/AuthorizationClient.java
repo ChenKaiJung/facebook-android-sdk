@@ -37,7 +37,10 @@ import com.facebook.widget.WebDialog;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 
 
 
@@ -496,11 +499,11 @@ class AuthorizationClient implements Serializable {
                         .createFromWebBundle(request.getPermissions(), values, AccessTokenSource.WEB_VIEW);
                 //outcome = Result.createTokenResult(token);
                 if(values.getString(AUTH_CODE_KEY) != null) {
-                	outcome = Result.createCodeResult(values.getString(AUTH_CODE_KEY));                	
+                	outcome = Result.createCodeBundleResult(values.getString(AUTH_CODE_KEY),values);               	
                 }
                 else if(token!=null 
                 		&& values.getString(SESSION_KEY_KEY)!=null) {
-                	outcome = Result.createTokenResult(token, values.getString(SESSION_KEY_KEY));                 	  	
+                	outcome = Result.createTokenBundleResult(token, values);                  
                 }
                 else 
                 {
@@ -849,17 +852,21 @@ class AuthorizationClient implements Serializable {
 
         final Code code;
         final AccessToken token;
-        final String authCode; 
-        final String sessionKey;           
+        final String authCode;         
         final String errorMessage;
-
+        final Map<String, String>values;
+        
 //        private Result(Code code, AccessToken token, String errorMessage) {
-        private Result(Code code, String authCode, AccessToken token, String SessionKey,String errorMessage) {        
+        private Result(Code code, String authCode, AccessToken token, String errorMessage, Bundle bundle) {        
             this.token = token;
             this.errorMessage = errorMessage;
-            this.authCode=authCode;
-            this.sessionKey=SessionKey;            
-            this.code = code;         
+            this.authCode=authCode;           
+            this.code = code;     
+            //Bundle can't be Serialize
+            values = new HashMap<String, String>();
+            for (String key : bundle.keySet()) {
+            	values.put(key, bundle.getString(key));
+            }    
         }
 
         static Result createTokenResult(AccessToken token) {
@@ -869,15 +876,19 @@ class AuthorizationClient implements Serializable {
 
         static Result createCodeResult(String authCode) {
             return new Result(Code.SUCCESS, authCode, null, null, null);
-        }    
+        }      
+               
+        static Result createCodeBundleResult(String authCode, Bundle bundle) {
+            return new Result(Code.SUCCESS, authCode, null, null, bundle);
+        }   
+ 
+        static Result createTokenBundleResult(AccessToken token, Bundle bundle) {
+            return new Result(Code.SUCCESS, null, token,  null,bundle);
+        }              
         
-        static Result createTokenResult(AccessToken token,String sessionKey) {
-            return new Result(Code.SUCCESS, null, token, sessionKey, null);
-        }        
-                
         static Result createCancelResult(String message) {
             //return new Result(Code.CANCEL, null, message);
-            return new Result(Code.CANCEL, null, null, null, message);        	
+            return new Result(Code.CANCEL, null, null, message,null);        	
         }
 
         static Result createErrorResult(String errorType, String errorDescription) {
@@ -886,7 +897,7 @@ class AuthorizationClient implements Serializable {
                 message += ": " + errorDescription;
             }
             //return new Result(Code.ERROR, null, message);
-            return new Result(Code.ERROR, null, null, null, message);            
+            return new Result(Code.ERROR, null, null, message, null);            
         }
     }
 }

@@ -138,7 +138,7 @@ public class Session implements Serializable {
     private SessionState state;
     private String authCode;    
     private AccessToken tokenInfo;
-    private String sessionKey;      
+    private Map<String,String> values;      
     private Date lastAttemptedTokenExtendDate = new Date(0);
     private String redirectUri;
     
@@ -263,8 +263,8 @@ public class Session implements Serializable {
         } else {
             this.tokenInfo = AccessToken.createEmptyToken(Collections.<String>emptyList());
         }
-    }
-
+    }    
+    
     /**
      * Returns a Bundle containing data that was returned from Facebook during
      * authorization.
@@ -331,10 +331,17 @@ public class Session implements Serializable {
         return this.authCode;
     }
     
-    public final String getSessionKey() {
-        return this.sessionKey;
+    public final Map<String,String> getValues() {
+        return this.values;
     }  
-    
+
+	public final String getRedirectUri() {
+		return this.redirectUri;
+	}
+
+	public void setRedirectUri(String redirectUri) {
+		this.redirectUri = redirectUri;
+	}  
     /**
      * <p>
      * Returns the Date at which the current token will expire.
@@ -1051,13 +1058,13 @@ public class Session implements Serializable {
         String authCode = null;
     	AccessToken newToken = null;
         Exception exception = null;
-        String sessionKey = null;
+        Map<String,String> values = null;
         
         if (resultCode == Activity.RESULT_OK) {
             if (result.code == AuthorizationClient.Result.Code.SUCCESS) {
                 newToken = result.token;
                 authCode = result.authCode;
-                sessionKey= result.sessionKey;
+                values= result.values;
             } else {
                 exception = new FuntownAuthorizationException(result.errorMessage);
             }
@@ -1066,7 +1073,7 @@ public class Session implements Serializable {
         }
 
         authorizationClient = null;
-        finishAuthOrReauth(authCode, newToken, sessionKey, exception);
+        finishAuthOrReauth(authCode, newToken, values, exception);
     }
 
     private boolean tryLoginActivity(AuthorizationRequest request) {
@@ -1127,7 +1134,7 @@ public class Session implements Serializable {
     }
 
     @SuppressWarnings("incomplete-switch")
-    void finishAuthOrReauth(String authCode, AccessToken newToken, String sessonKey, Exception exception) {
+    void finishAuthOrReauth(String authCode, AccessToken newToken, Map<String,String> values, Exception exception) {
         // If the token we came up with is expired/invalid, then auth failed.
         if ((newToken != null) && newToken.isInvalid()) {
             newToken = null;
@@ -1137,7 +1144,7 @@ public class Session implements Serializable {
         synchronized (this.lock) {
         	
         	this.authCode = authCode;
-        	this.sessionKey = sessonKey;
+        	this.values = values;
         	
             switch (this.state) {
                 case OPENING:
@@ -1185,7 +1192,7 @@ public class Session implements Serializable {
         postStateChange(oldState, state, exception);
     }    
     
-    private void finishReauthorization(final AccessToken newToken, Exception exception) {
+    private void finishReauthorization(AccessToken newToken, Exception exception) {
         final SessionState oldState = state;
 
         if (newToken != null) {
