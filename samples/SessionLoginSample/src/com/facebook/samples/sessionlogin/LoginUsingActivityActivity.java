@@ -95,7 +95,7 @@ public class LoginUsingActivityActivity extends Activity {
     private void updateView() {
         Session session = Session.getActiveSession();
         if (session.isOpened()) {
-            textInstructionsOrLink.setText(URL_PREFIX_FRIENDS + session.getAccessToken() + "&session_key=" + session.getValues().get("session_key"));        	
+            textInstructionsOrLink.setText(URL_PREFIX_FRIENDS + session.getAccessToken() + "&session_key=" + session.getValues().get("session_key") + "&uuid=" + session.getValues().get("uuid"));        	
 //            textInstructionsOrLink.setText(URL_PREFIX_FRIENDS + session.getAccessToken());
             buttonLoginLogout.setText(R.string.logout);
             buttonLoginLogout.setOnClickListener(new OnClickListener() {
@@ -154,17 +154,17 @@ public class LoginUsingActivityActivity extends Activity {
 	            Uri redirectUri = Uri.parse(facebookBindingRedirectUri);
 	            Bundle parameters= new Bundle();
 	            
-	            parameters.putString("provider_id", "facebook");
+	            parameters.putString("provider", "facebook");
 	            parameters.putString("client_id", facebookApplicationId);		            
 	            parameters.putString("uuid", UUID);
 	            
 	            Uri redirectUriWithUUID=Utility.buildUri(redirectUri.getAuthority(), redirectUri.getPath(), parameters);
-	            session.setRedirectUri(redirectUriWithUUID.toString());
+
 	            
 	            if (!session.isOpened() && !session.isClosed()) {
-	                session.openForRead(new Session.OpenRequest(ac).setCallback(statusCallback));
+	                session.openForReadWithRedirectUri(new Session.OpenRequest(ac).setCallback(statusCallback), redirectUriWithUUID.toString());
 	            } else {
-	                Session.openActiveSession(ac, true, statusCallback);
+	                Session.openActiveSessionWithRedirectUri(ac,  redirectUriWithUUID.toString() , true, statusCallback);
 	            }	            
 			}     		
     	});

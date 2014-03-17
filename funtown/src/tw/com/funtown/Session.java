@@ -31,6 +31,8 @@ import java.io.*;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
+
+
 /**
  * <p>
  * Session is used to authenticate a user and manage the user's session with
@@ -407,7 +409,10 @@ public class Session implements Serializable {
     public final void openForRead(OpenRequest openRequest) {
         open(openRequest, SessionAuthorizationType.READ);
     }
-
+    public final void openForReadWithRedirectUri(OpenRequest openRequest,String redirectUri) {
+    	setRedirectUri(redirectUri);
+        open(openRequest, SessionAuthorizationType.READ);
+    }
     /**
      * <p>
      * Logs a user in to Facebook.
@@ -881,7 +886,20 @@ public class Session implements Serializable {
 
         return session;
     }
-
+    
+    public static Session openActiveSessionWithRedirectUri(Activity activity, String redirectUri, boolean allowLoginUI,
+            StatusCallback callback) {
+    	OpenRequest openRequest=new OpenRequest(activity).setCallback(callback);
+        Session session = new Builder(activity).build();
+        session.setRedirectUri(redirectUri);
+        if (SessionState.CREATED_TOKEN_LOADED.equals(session.getState()) || allowLoginUI) {
+            setActiveSession(session);
+            session.openForRead(openRequest);
+            return session;
+        }
+        return null;
+    } 
+    
     private static Session openActiveSession(Context context, boolean allowLoginUI, OpenRequest openRequest) {
         Session session = new Builder(context).build();
         if (SessionState.CREATED_TOKEN_LOADED.equals(session.getState()) || allowLoginUI) {

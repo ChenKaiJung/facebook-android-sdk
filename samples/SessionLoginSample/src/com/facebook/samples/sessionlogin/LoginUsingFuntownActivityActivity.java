@@ -18,6 +18,8 @@ package com.facebook.samples.sessionlogin;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -96,7 +98,7 @@ public class LoginUsingFuntownActivityActivity extends Activity {
     private void updateView() {
         Session session = Session.getActiveSession();
         if (session.isOpened()) {
-        	textInstructionsOrLink.setText(URL_PREFIX_PROFILE + session.getAccessToken() + "&session_key=" + session.getValues().get("session_key"));
+        	textInstructionsOrLink.setText(URL_PREFIX_PROFILE + session.getAccessToken() + "&session_key=" + session.getValues().get("session_key")  + "&uuid=" + session.getValues().get("uuid"));
             buttonLoginLogout.setText(R.string.logout);
             buttonLoginLogout.setOnClickListener(new OnClickListener() {
                 public void onClick(View view) { onClickLogout(); }
@@ -148,16 +150,31 @@ public class LoginUsingFuntownActivityActivity extends Activity {
 			@Override
 			public void onUUIDGenerated(String UUID) {
 	            textInstructionsOrLink.setText("UUID : "+UUID);	
+	            String funtownBindingRedirectUri="";
+	            String funtownClientId="";
+	            try {
+	                ApplicationInfo ai = ac.getPackageManager().getApplicationInfo(
+	                        ac.getPackageName(), PackageManager.GET_META_DATA);
+	                if (ai.metaData != null) {
+	                	funtownBindingRedirectUri= ai.metaData.getString("tw.com.funtown.sdk.BindingRedirectUri");
+	                	funtownClientId= ai.metaData.getString("tw.com.funtown.sdk.ClientId");
+	                }
+	            } catch (PackageManager.NameNotFoundException e) {
+	            }	            
+	            
 	            Session session = Session.getActiveSession();
-	            Uri redirectUri = Uri.parse(Utility.getMetadataRedirctUri(ac));
+	            Uri redirectUri = Uri.parse(funtownBindingRedirectUri);
 	            Bundle parameters= new Bundle();
+	            
+	            parameters.putString("provider", "funtown");
+	            parameters.putString("client_id", funtownClientId);		            
 	            parameters.putString("uuid", UUID);
+	            
 	            Uri redirectUriWithUUID=Utility.buildUri(redirectUri.getAuthority(), redirectUri.getPath(), parameters);
-	            session.setRedirectUri(redirectUriWithUUID.toString());
 	            if (!session.isOpened() && !session.isClosed()) {
-	                session.openForRead(new Session.OpenRequest(ac).setCallback(statusCallback));
+	                session.openForReadWithRedirectUri(new Session.OpenRequest(ac).setCallback(statusCallback), redirectUriWithUUID.toString());
 	            } else {
-	                Session.openActiveSession(ac, true, statusCallback);
+	                Session.openActiveSessionWithRedirectUri(ac,  redirectUriWithUUID.toString() , true, statusCallback);
 	            }	            
 			}     		
     	});
