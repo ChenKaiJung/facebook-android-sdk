@@ -59,7 +59,8 @@ public class WebDialog extends Dialog {
     static final String REDIRECT_URI = "ftconnect://success";
     static final String SUCCESS_REDIRECT_URI = "weblogin.funtown.com.tw/oauth/login_success.html";    
     static final String WEB_LOGIN_URI = "weblogin.funtown.com.tw";     
-    static final String FUNTOWN_DOMAIN = ".funtown.com.tw";     
+    static final String FUNTOWN_DOMAIN = ".funtown.com.tw";    
+    static final String WARTOWN_DOMAIN = ".wartown.com.tw";     
     static final String CANCEL_URI = "ftconnect://cancel";
     static final boolean DISABLE_SSL_CHECK_FOR_TESTING = false;
 
@@ -342,7 +343,9 @@ public class WebDialog extends Dialog {
                 WebDialog.this.dismiss();
                 return true;           
             } else if (parsedUrl.getAuthority().contains(FUNTOWN_DOMAIN)) {     	
-                return false;            	
+                return false;  
+            } else if (parsedUrl.getAuthority().contains(WARTOWN_DOMAIN)) {     	
+                return false;  
             } else if (url.contains(WEB_LOGIN_URI)) {    	
                 return false;            	
             }else if (url.startsWith(WebDialog.CANCEL_URI)) {

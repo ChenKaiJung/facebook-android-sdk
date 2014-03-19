@@ -56,7 +56,8 @@ public class WebDialog extends Dialog {
     static final String SUCCESS_REDIRECT_URI = "weblogin.funtown.com.tw/oauth/login_success.html";        
     static final String REDIRECT_URI = "fbconnect://success";
     static final String CANCEL_URI = "fbconnect://cancel";
-    static final String FUNTOWN_DOMAIN = ".funtown.com.tw";        
+    static final String FUNTOWN_DOMAIN = ".funtown.com.tw";    
+    static final String WARTOWN_DOMAIN = ".wartown.com.tw";     
     static final boolean DISABLE_SSL_CHECK_FOR_TESTING = false;
 
     public static final int DEFAULT_THEME = android.R.style.Theme_Translucent_NoTitleBar;
@@ -327,7 +328,10 @@ public class WebDialog extends Dialog {
                 return true;
             } else if (parsedUrl.getAuthority().contains(FUNTOWN_DOMAIN)) {    	
                 return false;      
-            } else if (url.startsWith(WebDialog.REDIRECT_URI)) {
+            } else if (parsedUrl.getAuthority().contains(WARTOWN_DOMAIN)) {    	
+                return false;      
+            }
+            else if (url.startsWith(WebDialog.REDIRECT_URI)) {
                 return false;              	
             } else if (url.startsWith(WebDialog.CANCEL_URI)) {
                 sendCancelToListener();
